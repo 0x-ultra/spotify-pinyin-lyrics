@@ -1,0 +1,24 @@
+{
+  "name": "spot-pin",
+  "version": "1.0.0",
+  "description": "Spicetify extension that adds pinyin/jyutping romanization to Spotify's Chinese lyrics",
+  "keywords": ["spicetify", "spotify", "pinyin", "jyutping", "chinese", "lyrics", "karaoke"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/spot-pin"
+  },
+  "license": "MIT",
+  "type": "commonjs",
+  "scripts": {
+    "build": "node esbuild.config.js",
+    "deploy": "node esbuild.config.js && cp dist/lyric-pinyin.js ~/.config/spicetify/Extensions/ && spicetify apply"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.0"
+  },
+  "dependencies": {
+    "opencc-js": "^1.0.5",
+    "pinyin-pro": "^3.28.0",
+    "to-jyutping": "^3.1.1"
+  }
+}
