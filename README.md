@@ -1,10 +1,12 @@
-# spotify-pinyin-lyrics
+# 拼音歌词 · Spotify Pinyin Lyrics
 
-<img width="1725" height="1114" alt="image" src="https://github.com/user-attachments/assets/7a42198b-af66-430f-a74f-796a06278b3b" />
+<img width="700" alt="image" src="https://github.com/user-attachments/assets/7a42198b-af66-430f-a74f-796a06278b3b" />
 
 A [Spicetify](https://spicetify.app) extension that adds **pinyin** or **jyutping** romanization above Chinese lyrics in Spotify — so you can actually sing along.
 
 By [@0x_ultra](https://x.com/0x_ultra)
+
+---
 
 ## Why
 
@@ -13,26 +15,26 @@ Spotify has a great synced lyrics feature, but if you're learning Mandarin or Ca
 ## Features
 
 - **Pinyin** (Mandarin) or **Jyutping** (Cantonese) romanization
-- **Simplified** or **Traditional** Chinese characters — Spotify's lyrics are Traditional by default, conversion handled automatically
+- **Simplified** or **Traditional** Chinese characters — Spotify's lyrics are Traditional by default, conversion is handled automatically
 - **Tones on/off** — tone marks (`nǐ hǎo`) or bare syllables (`ni hao`); jyutping keeps numeric tones (`gam3`) when on
 - Floating **文** settings button, accessible from anywhere in the app
-- Settings persist across sessions via `localStorage`
+- Settings persist across sessions
 - Works with Spotify's synced (line-by-line) lyrics
 - Non-Chinese lines are left untouched
 
 ## How it works
 
-The extension uses a `MutationObserver` to watch Spotify's lyrics DOM. When Chinese characters are detected in a lyric line, it:
+The extension watches Spotify's lyrics DOM with a `MutationObserver`. When a Chinese lyric line appears:
 
 1. Optionally converts Traditional → Simplified via [opencc-js](https://github.com/nkcs-iclab/opencc-js)
-2. Generates romanization per character via [pinyin-pro](https://github.com/zh-lx/pinyin-pro) (Mandarin) or [to-jyutping](https://github.com/CanCLID/to-jyutping) (Cantonese)
+2. Generates per-character romanization via [pinyin-pro](https://github.com/zh-lx/pinyin-pro) (Mandarin) or [to-jyutping](https://github.com/CanCLID/to-jyutping) (Cantonese)
 3. Wraps each character in a `<ruby>` tag so the romanization floats above it
 
 ## Requirements
 
 - [Spotify desktop app](https://www.spotify.com/download) — **not** the Mac App Store version
 - [Spicetify](https://spicetify.app) v2.x
-- Node.js + npm (to build from source)
+- Node.js + npm
 
 ## Installation
 
@@ -45,7 +47,7 @@ sudo chmod a+wr /Applications/Spotify.app/Contents/MacOS/Spotify
 spicetify backup apply
 ```
 
-### 2. Clone and build
+### 2. Clone and install
 
 ```bash
 git clone https://github.com/0x-ultra/spotify-pinyin-lyrics.git
@@ -59,29 +61,29 @@ npm install
 npm run deploy
 ```
 
-This builds the extension, copies it to Spicetify's extensions folder, and applies it in one step.
+Builds the extension, copies it to Spicetify's extensions folder, and applies it in one step.
 
 ### 4. Restart Spotify
 
-A floating **文** button will appear in the top-right corner. Click it to open the settings panel.
+A floating **文** button will appear in the top-right corner of the app. Click it to open settings.
 
 ## Settings
 
 | Option | Values | Default |
 |---|---|---|
-| Characters | Simplified (简) / Traditional (繁) | Simplified |
+| Characters | Simplified 简 / Traditional 繁 | Simplified |
 | Romanization | Pinyin / Jyutping | Pinyin |
 | Tones | On / Off | On |
 
 ## Development
 
-Edit `src/index.js`, then run:
+Edit `src/index.js`, then:
 
 ```bash
 npm run deploy
 ```
 
-## Libraries used
+## Libraries
 
 | Library | Purpose |
 |---|---|
@@ -92,7 +94,7 @@ npm run deploy
 
 ## Notes
 
-- Spotify's lyrics DOM selectors can change after app updates. If romanization stops working, open DevTools (`Cmd+Option+I`) and inspect the lyrics container to find the new selectors, then update `LYRIC_SELECTORS` in `src/index.js`.
+- Spotify's lyrics DOM selectors can change after app updates. If romanization stops working, open DevTools (`Cmd+Option+I`), inspect the lyrics container for the new selectors, and update `LYRIC_SELECTORS` in `src/index.js`.
 - Modifying Spotify technically violates their ToS. This is for personal use only.
 
 ## License
