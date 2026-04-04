@@ -1,5 +1,7 @@
 # spotify-pinyin-lyrics
 
+<img width="1725" height="1114" alt="image" src="https://github.com/user-attachments/assets/7a42198b-af66-430f-a74f-796a06278b3b" />
+
 A [Spicetify](https://spicetify.app) extension that adds **pinyin** or **jyutping** romanization above Chinese lyrics in Spotify — so you can actually sing along.
 
 By [@0x_ultra](https://x.com/0x_ultra)
