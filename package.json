@@ -5,7 +5,7 @@
   "keywords": ["spicetify", "spotify", "pinyin", "jyutping", "chinese", "lyrics", "karaoke"],
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/spot-pin"
+    "url": "https://github.com/0x-ultra/spotify-pinyin-lyrics"
   },
   "license": "MIT",
   "type": "commonjs",
