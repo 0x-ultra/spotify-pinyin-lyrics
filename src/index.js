@@ -87,15 +87,10 @@
         })
         .join("");
     } else {
-      const pinyinArr = pinyin(text, {
-        type: "array",
-        toneType: s.tones ? "symbol" : "none",
-        nonZh: "consecutive",
-      });
       return chars
-        .map((char, i) => {
-          const py = pinyinArr[i] || "";
+        .map((char) => {
           if (CJK_RE.test(char)) {
+            const py = pinyin(char, { toneType: s.tones ? "symbol" : "none" });
             return `<ruby class="lp">${char}<rt>${py}</rt></ruby>`;
           }
           return char;
