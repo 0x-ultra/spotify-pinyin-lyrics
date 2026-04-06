@@ -87,11 +87,16 @@
         })
         .join("");
     } else {
+      // Batch call preserves sentence context for polyphone disambiguation
+      // (e.g. 了 → "le" in 吃了饭 vs "liǎo" in 了解)
+      const pinyinArr = pinyin(text, {
+        type: "array",
+        toneType: s.tones ? "symbol" : "none",
+      });
       return chars
-        .map((char) => {
+        .map((char, i) => {
           if (CJK_RE.test(char)) {
-            const py = pinyin(char, { toneType: s.tones ? "symbol" : "none" });
-            return `<ruby class="lp">${char}<rt>${py}</rt></ruby>`;
+            return `<ruby class="lp">${char}<rt>${pinyinArr[i]}</rt></ruby>`;
           }
           return char;
         })
