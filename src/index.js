@@ -67,6 +67,11 @@
     return CJK_RE.test(text);
   }
 
+  const HTML_ESCAPE = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, (c) => HTML_ESCAPE[c]);
+  }
+
   function buildRuby(rawText) {
     const s = getSettings();
 
@@ -81,20 +86,26 @@
         .map(([char, jp]) => {
           if (jp && CJK_RE.test(char)) {
             const label = s.tones ? jp : jp.replace(/\d$/, "");
-            return `<ruby class="lp">${char}<rt>${label}</rt></ruby>`;
+            return `<ruby class="lp">${esc(char)}<rt>${esc(label)}</rt></ruby>`;
           }
-          return char;
+          return esc(char);
         })
         .join("");
     } else {
+      // Pass the whole line so pinyin-pro can resolve polyphones from context
+      // (e.g. 行 → háng in 银行 vs xíng in 行走). nonZh: "spaced" keeps the
+      // array 1:1 with chars so indices stay aligned.
+      const pyArr = pinyin(text, {
+        type: "array",
+        toneType: s.tones ? "symbol" : "none",
+        nonZh: "spaced",
+      });
       return chars
-        .map((char) => {
-          if (CJK_RE.test(char)) {
-            const py = pinyin(char, { toneType: s.tones ? "symbol" : "none" });
-            return `<ruby class="lp">${char}<rt>${py}</rt></ruby>`;
-          }
-          return char;
-        })
+        .map((char, i) =>
+          CJK_RE.test(char)
+            ? `<ruby class="lp">${esc(char)}<rt>${esc(pyArr[i])}</rt></ruby>`
+            : esc(char)
+        )
         .join("");
     }
   }
@@ -137,8 +148,13 @@
   // ── Settings UI ──────────────────────────────────────────────────────────────
 
   let settingsPanel = null;
+  let outsideHandler = null;
 
   function closeSettings() {
+    if (outsideHandler) {
+      document.removeEventListener("click", outsideHandler);
+      outsideHandler = null;
+    }
     if (settingsPanel) {
       settingsPanel.remove();
       settingsPanel = null;
@@ -263,12 +279,10 @@
 
     // Close when clicking outside
     setTimeout(() => {
-      document.addEventListener("click", function onOutside(e) {
-        if (!panel.contains(e.target)) {
-          closeSettings();
-          document.removeEventListener("click", onOutside);
-        }
-      });
+      outsideHandler = (e) => {
+        if (!panel.contains(e.target)) closeSettings();
+      };
+      document.addEventListener("click", outsideHandler);
     }, 0);
 
     document.body.appendChild(panel);
@@ -316,8 +330,15 @@
 
   // ── DOM observer ─────────────────────────────────────────────────────────────
 
+  // Spotify mutates the DOM frequently; coalesce bursts into one rAF tick
+  let pending = false;
   const observer = new MutationObserver(() => {
-    processAllLines();
+    if (pending) return;
+    pending = true;
+    requestAnimationFrame(() => {
+      pending = false;
+      processAllLines();
+    });
   });
 
   observer.observe(document.body, {
