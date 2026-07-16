@@ -37,24 +37,30 @@
   // ── Settings ────────────────────────────────────────────────────────────────
 
   const SETTINGS_KEY = "lyric-pinyin:settings";
+  const DEFAULT_SETTINGS = {
+    characters: "simplified", // "traditional" | "simplified"
+    romanization: "pinyin",   // "pinyin" | "jyutping"
+    tones: true,              // show tone marks / numbers
+  };
+
+  // Cached so buildRuby() doesn't JSON.parse localStorage once per lyric line.
+  // Invalidated (rewritten) only in saveSettings.
+  let settingsCache = null;
 
   function getSettings() {
+    if (settingsCache) return settingsCache;
     try {
-      return (
-        JSON.parse(localStorage.getItem(SETTINGS_KEY)) ?? {
-          characters: "simplified", // "traditional" | "simplified"
-          romanization: "pinyin",   // "pinyin" | "jyutping"
-          tones: true,              // show tone marks / numbers
-        }
-      );
+      // Merge over defaults so a partial or older stored blob stays valid.
+      settingsCache = { ...DEFAULT_SETTINGS, ...(JSON.parse(localStorage.getItem(SETTINGS_KEY)) ?? {}) };
     } catch {
-      return { characters: "simplified", romanization: "pinyin", tones: true };
+      settingsCache = { ...DEFAULT_SETTINGS };
     }
+    return settingsCache;
   }
 
   function saveSettings(patch) {
-    const next = { ...getSettings(), ...patch };
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(next));
+    settingsCache = { ...getSettings(), ...patch };
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settingsCache));
     // Re-process all visible lyrics with new settings
     resetAndProcess();
   }
@@ -135,14 +141,29 @@
     ".lyrics-lyrics-container > p",
   ];
 
+  // Remember the selector that matched last so the hot path (fired ~every
+  // frame while lyrics scroll) does one querySelectorAll instead of walking
+  // the whole list. Falls back to the full scan whenever the cache misses,
+  // so it stays robust to Spotify swapping selectors mid-session.
+  let lastSelector = null;
+
   function processAllLines() {
-    for (const sel of LYRIC_SELECTORS) {
-      const lines = document.querySelectorAll(sel);
+    if (lastSelector) {
+      const lines = document.querySelectorAll(lastSelector);
       if (lines.length) {
         lines.forEach(processLine);
         return;
       }
     }
+    for (const sel of LYRIC_SELECTORS) {
+      const lines = document.querySelectorAll(sel);
+      if (lines.length) {
+        lastSelector = sel;
+        lines.forEach(processLine);
+        return;
+      }
+    }
+    lastSelector = null;
   }
 
   // ── Settings UI ──────────────────────────────────────────────────────────────

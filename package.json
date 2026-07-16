@@ -1,5 +1,5 @@
 {
-  "name": "spot-pin",
+  "name": "spotify-pinyin-lyrics",
   "version": "1.0.0",
   "description": "Spicetify extension that adds pinyin/jyutping romanization to Spotify's Chinese lyrics",
   "keywords": ["spicetify", "spotify", "pinyin", "jyutping", "chinese", "lyrics", "karaoke"],
