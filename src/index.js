@@ -117,12 +117,18 @@
   }
 
   function processLine(el) {
-    if (el.dataset.pinyinDone === "1") return;
-    // Use stored original text if re-processing — innerText would include <rt> content
-    const original = el.dataset.originalText || el.innerText;
+    // React renders each line's text as a single string child, so when it
+    // reuses the element for the next song it overwrites our ruby wholesale.
+    // `ours` tells our own render (safe to skip, or re-render from the stored
+    // source on a settings change) apart from fresh text Spotify just wrote.
+    const ours = el._lpNode != null && el._lpNode === el.firstChild;
+    if (ours && el.dataset.pinyinDone === "1") return;
+    // Re-reading innerText from our own render would pick up the <rt> labels
+    const original = ours ? el.dataset.originalText : el.innerText;
     if (!original || !hasChinese(original)) return;
-    if (!el.dataset.originalText) el.dataset.originalText = original;
+    el.dataset.originalText = original;
     el.innerHTML = buildRuby(original);
+    el._lpNode = el.firstChild;
     el.dataset.pinyinDone = "1";
   }
 
@@ -135,6 +141,13 @@
   }
 
   const LYRIC_SELECTORS = [
+    // Spotify 1.3.x: class names are fully hashed CSS modules and the testid
+    // is stripped in prod, so anchor on the lyrics root's inline
+    // --lyrics-color-* vars (hand-written, not hashed) and take the text child
+    // of each dir="auto" line. The second child, Spotify's optional
+    // translation row, is left alone.
+    '[style*="--lyrics-color-active"] [dir="auto"] > div:first-child',
+    // Older Spotify builds
     '[data-testid="fullscreen-lyric"]',
     '[class*="lyric-"]',
     '[class*="lyrics-lyricsContent-"]',
@@ -365,16 +378,6 @@
   observer.observe(document.body, {
     childList: true,
     subtree: true,
-  });
-
-  Spicetify.Player.addEventListener("songchange", () => {
-    setTimeout(() => {
-      document.querySelectorAll("[data-pinyin-done]").forEach((el) => {
-        delete el.dataset.pinyinDone;
-        delete el.dataset.originalText;
-      });
-      processAllLines();
-    }, 800);
   });
 
   setTimeout(() => processAllLines(), 1000);
