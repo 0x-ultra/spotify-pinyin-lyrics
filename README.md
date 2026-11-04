@@ -92,6 +92,33 @@ npm run deploy
 | [opencc-js](https://github.com/nkcs-iclab/opencc-js) | Traditional ↔ Simplified Chinese conversion |
 | [esbuild](https://esbuild.github.io) | Bundles everything into a single JS file |
 
+## Troubleshooting
+
+### Spotify updated and the extension disappeared
+
+Spotify auto-updates replace the app files that Spicetify patches, so after an update the **文** button and romanization vanish, and Spicetify may warn that the Spotify and backup versions don't match. Re-patch Spotify against the new version:
+
+```bash
+spicetify backup apply
+```
+
+Then restart Spotify. The extension is still registered in Spicetify's config, so there's no need to re-run `npm run deploy`.
+
+If that still fails:
+
+- **Permission errors (macOS):** the update reset file permissions. Run the `chmod` commands from [Install Spicetify](#1-install-spicetify) again, then retry `spicetify backup apply`.
+- **Backup or version mismatch errors:** clear the stale backup and create a fresh one:
+
+  ```bash
+  spicetify restore backup apply
+  ```
+
+- **Extension still missing:** check it's listed in `spicetify config extensions`. If not, run `spicetify config extensions lyric-pinyin.js`, then `npm run deploy`.
+
+### Spotify loads but romanization doesn't appear
+
+If the **文** button shows up but lyrics have no pinyin or jyutping, Spotify probably changed its lyrics markup. See the first item under [Notes](#notes).
+
 ## Notes
 
 - Spotify's lyrics DOM selectors can change after app updates. If romanization stops working, open DevTools (`Cmd+Option+I`), inspect the lyrics container for the new selectors, and update `LYRIC_SELECTORS` in `src/index.js`.
